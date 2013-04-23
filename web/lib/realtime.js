@@ -12,15 +12,15 @@ function Realtime(access_token) {
   console.log("TOKEN",this.token);
 }
 
-Realtime.prototype.load = function(fileId) {
-	gapi.drive.realtime.load(fileId, onFileLoaded, initializeModel);
-}
-
-function onFileLoaded(doc) {
+Realtime.prototype.onFileLoaded = function(doc) {
     var textArea1 = document.getElementById('textarea1');
     var textArea2 = document.getElementById('textarea2');
 
-    var string = doc.getModel().getRoot().get('text');
+	this.model = doc.getModel();
+	
+	var string = this.model.getRoot().get('text');
+
+    //var string = doc.getModel().getRoot().get('text');
 
     // Keeping one box updated with a String binder.
 
@@ -40,9 +40,5 @@ function onFileLoaded(doc) {
     // Enabling UI Elements.
     textArea1.disabled = false;
     textArea2.disabled = false;
-}
-
-function initializeModel(model) {
-    var string = model.createString("Hello Realtime World!");
-    model.getRoot().set("text", string);
+    
 }

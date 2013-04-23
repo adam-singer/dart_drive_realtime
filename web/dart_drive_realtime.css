@@ -11,6 +11,6 @@ h1, p {
   color: #333;
 }
 
-.editor { margin-top:2em;}
+.editor { margin-top:2em;margin-right:1em;width:20em;height:20em;}
 #fileId {width:25em;}
 .toolbar{margin-top:2em;}
