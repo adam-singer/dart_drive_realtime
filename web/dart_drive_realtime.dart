@@ -111,23 +111,15 @@ void _initializeModel(js.Proxy modelProxy){
 }
 
 void _onFileLoaded(js.Proxy docProxy) {
-  
-  
   realtime.Document doc = realtime.Document.cast(docProxy);
   realtime.Model model = doc.model;
   realtime.CollaborativeString collabStr = new realtime.CollaborativeString.fromProxy(model.root.get("text"));
-  
   rtbinding.Binding.cast(rtbinding.realtimeDatabinding['bindString'](collabStr, textArea1));
-    
+  
   collabStr.onTextInserted.listen((e) => textArea2.value = collabStr.text);
   collabStr.onTextDeleted.listen((e) => textArea2.value = collabStr.text);
   
   js.retain(collabStr);
-  
   textArea1.disabled = false;
-  
   textArea2.value = collabStr.text;
-  
-  
-  
 }
