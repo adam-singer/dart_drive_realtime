@@ -1,9 +1,11 @@
 import 'dart:html';
 import 'dart:json';
+import 'dart:async';
 import "package:google_drive_v2_api/drive_v2_api_browser.dart" as drivelib;
 import "package:google_oauth2_client/google_oauth2_browser.dart";
 import 'package:js/js.dart' as js;
 import 'package:google_drive_realtime/google_drive_realtime.dart' as realtime;
+import 'package:google_drive_realtime/google_drive_realtime_databinding.dart' as rtbinding;
 
 String clientId = "";
 GoogleOAuth2 auth;
@@ -12,7 +14,7 @@ final SCOPES = [drivelib.Drive.DRIVE_FILE_SCOPE, drivelib.Drive.DRIVE_SCOPE];
 final GAPI_URL = "https://apis.google.com/js/api.js";
 
 final TextAreaElement textArea1 = query("#textarea1");
-final TextAreaElement textArea2 = query("#textarea2`");
+final TextAreaElement textArea2 = query("#textarea2");
 final ButtonElement createButton = query("#create");
 final ButtonElement loadButton = query("#load");
 final InputElement fileIdInput = query("#fileId");
@@ -90,12 +92,11 @@ void _loadClick(e) {
 }
 
 void _loadFile(String fileId) {
-  //0B315YrNkj-ZxYlR4eEsxLW5YQVE
-  //0B315YrNkj-Zxc1k5ZUZFY0JqcXc
-
-  var rt = new js.Proxy(js.context.Realtime, auth.token.data);
-  var onFileLoaded = rt.onFileLoaded;
-  var initializeModel = new js.Callback.once(initializeModel);
+  String access_token = auth.token.data;
+  var token = {'access_token':access_token};
+  js.context.gapi.auth.setToken(js.map(token));
+  var onFileLoaded = new js.Callback.many(_onFileLoaded);
+  var initializeModel = new js.Callback.once(_initializeModel);
   js.context.gapi.drive.realtime.load(fileId, onFileLoaded, initializeModel);
 }
 
@@ -103,8 +104,30 @@ void _fileIdInputChange(e) {
   if(fileIdInput.value != "") loadButton.disabled = false;
 }
 
-void initializeModel(js.Proxy modelProxy){
+void _initializeModel(js.Proxy modelProxy){
   realtime.Model model = realtime.Model.cast(modelProxy);
   realtime.CollaborativeString collabStr = model.createString("Hello Realtime World!");
   model.root.set("text",collabStr);
+}
+
+void _onFileLoaded(js.Proxy docProxy) {
+  
+  
+  realtime.Document doc = realtime.Document.cast(docProxy);
+  realtime.Model model = doc.model;
+  realtime.CollaborativeString collabStr = new realtime.CollaborativeString.fromProxy(model.root.get("text"));
+  
+  rtbinding.Binding.cast(rtbinding.realtimeDatabinding['bindString'](collabStr, textArea1));
+    
+  collabStr.onTextInserted.listen((e) => textArea2.value = collabStr.text);
+  collabStr.onTextDeleted.listen((e) => textArea2.value = collabStr.text);
+  
+  js.retain(collabStr);
+  
+  textArea1.disabled = false;
+  
+  textArea2.value = collabStr.text;
+  
+  
+  
 }
