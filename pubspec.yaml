@@ -1,0 +1,7 @@
+name: dart_drive_realtime
+description: A sample WebUI application that is an example of Google Drive Realtime API.
+dependencies:
+  google_drive_realtime: any
+  js: any
+  browser: any
+  google_drive_v2_api: any
